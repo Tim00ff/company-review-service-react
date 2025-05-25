@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { store } from './mockBackend/Store';
-import { HomePage } from './HomePage';
-import { LoginPage } from './LoginPage';
+import { HomePage } from './pages/HomePage';
+import { LoginPage } from './pages/LoginPage';
+import { ServiceDetail } from './components/ServiceDetail';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -26,6 +27,13 @@ function App() {
     store.logout();
     setCurrentUser(null);
   };
+  
+   const handleResetData = async () => {
+    if (window.confirm('Are you sure you want to reset ALL data? This cannot be undone!')) {
+      await store.resetToInitial();
+      handleLogout();
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
 
@@ -40,6 +48,15 @@ function App() {
         ) : (
           <Link to="/login">Login</Link>
         )}
+		{currentUser && (
+          <button 
+            onClick={handleResetData}
+            className="danger"
+            title="Reset all data to initial state"
+          >
+            Reset Data (Debug)
+          </button>
+        )}
       </nav>
 
       <Routes>
@@ -49,6 +66,9 @@ function App() {
         }/>
         <Route path="/" element={
           currentUser ? <HomePage /> : <Navigate to="/login" />
+        }/>
+		<Route path="/services/:id" element={
+          currentUser ? <ServiceDetail /> : <Navigate to="/login" />
         }/>
       </Routes>
     </BrowserRouter>
