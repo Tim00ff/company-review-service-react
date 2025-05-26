@@ -1,0 +1,320 @@
+.comment {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: pre-line;
+  overflow-wrap: break-word; 
+  word-break: break-word; 
+  max-width: 100%;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.author {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.date {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.ratingStars {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.star {
+  background: none;
+  border: none;
+  color: #e2e8f0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0;
+}
+
+.star:hover:not(:disabled) {
+  color: #ffd700;
+}
+
+.star.active {
+  color: #ffd700;
+}
+
+.star:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.averageRating {
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+.commentText {
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.commentFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reactions {
+  display: flex;
+  gap: 1rem;
+}
+
+.likeButton, .dislikeButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.likeButton:hover, .dislikeButton:hover {
+  background: #edf2f7;
+}
+
+.likeButton.active {
+  background: #fff5f5;
+  border-color: #fed7d7;
+  color: #f56565;
+}
+
+.dislikeButton.active {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  color: #718096;
+}
+
+.meta {
+  font-size: 0.9rem;
+  color: #718096;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.starContainer {
+  position: relative;
+  display: inline-block;
+  width: 24px;
+}
+
+.starBackground,
+.starFill {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.starBackground {
+  color: #ddd;
+}
+
+.starFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  color: #ffd700;
+  white-space: nowrap;
+}
+
+.replySection {
+  margin-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.toggleReplyButton {
+  background: none;
+  border: none;
+  color: #6366f1;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.toggleReplyButton:hover {
+  text-decoration: underline;
+}
+
+.replyForm {
+  margin-top: 0.5rem;
+}
+
+.replyForm textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.submitReplyButton {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.repliesContainer {
+  margin-top: 1rem;
+  margin-left: 2rem;
+  border-left: 2px solid #e2e8f0;
+  padding-left: 1rem;
+}
+
+.reply {
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.replyHeader {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.replyAuthor {
+  font-weight: 500;
+  color: #334155;
+}
+
+.replyText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+/* Comment.module.css */
+.repliesContainer {
+  margin-top: 1rem;
+  margin-left: 2rem;
+  border-left: 2px solid #e2e8f0;
+  padding-left: 1rem;
+}
+
+.reply {
+  background: #f8fafc;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+
+.reply::before {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 1.2rem;
+  width: 0.8rem;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+.replyHeader {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.replyAuthor {
+  font-weight: 500;
+  color: #334155;
+}
+
+.replyText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.5;
+  
+  white-space: pre-line;
+  overflow-wrap: break-word; 
+  word-break: break-word; 
+  max-width: 100%; 
+}
+
+.expandButton {
+  background: none;
+  border: none;
+  color: #6366f1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.expandButton:hover {
+  text-decoration: underline;
+}
+
+.showMoreReplies {
+  background: none;
+  border: none;
+  color: #6366f1;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: left;
+}
+
+.showMoreReplies:hover {
+  text-decoration: underline;
+}
+
+.replyActions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.replyActions button {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.replyActions .likeButton.active {
+  color: #ff1744;
+}
+
+.replyActions .dislikeButton.active {
+  color: #616161;
+}

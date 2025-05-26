@@ -2,30 +2,33 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { store } from '../mockBackend/Store';
 import styles from './ServicePost.module.css';
-import { ServiceDetail } from './ServiceDetail';
 
-export const ServicePost = ({ service, isDetail = false }) => {
+export const ServicePost = ({ service, isDetail = false, onUpdate }) => {
   const navigate = useNavigate();
   const [userRating, setUserRating] = useState(0);
   const [userLiked, setUserLiked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [averageRating, setAverageRating] = useState(0);
 
   useEffect(() => {
     const loadUser = async () => {
       const user = await store.getCurrentUser();
       setCurrentUser(user);
       
-      // Check existing interactions
       if (user) {
         setUserLiked(service.likes?.includes(user.id));
         setUserRating(service.ratings?.[user.id] || 0);
-        
-        // Increment views with cooldown
         store.incrementViews(service.id, user.id);
       }
     };
+    
+    const updateRating = () => {
+    setAverageRating(service.averageRating || 0); // Use service.averageRating
+  };
+
     loadUser();
-  }, [service.id]);
+    updateRating();
+  }, [service.id, service.comments]);
 
   const handleRate = async (stars) => {
     if (!currentUser) return;
@@ -33,6 +36,8 @@ export const ServicePost = ({ service, isDetail = false }) => {
     try {
       await store.rateService(service.id, currentUser.id, stars);
       setUserRating(stars);
+      setAverageRating(store.getServiceAverageRating(service.id));
+      onUpdate?.();
     } catch (error) {
       alert(error.message);
     }
@@ -56,9 +61,32 @@ export const ServicePost = ({ service, isDetail = false }) => {
 
   return (
     <div className={styles.servicePost}>
-      <div className={styles.serviceHeader}>
-        <h2>{service.sections[0].title}</h2>
-      </div>
+	  <div className={styles.serviceHeader}>
+		<div className={styles.ratingSummary}>
+		  <div className={styles.stars}>
+			{[1, 2, 3, 4, 5].map((star) => {
+			  const isFilled = star <= averageRating;
+			  const isHalf = !isFilled && (averageRating + 0.5) >= star;
+			  
+			  return (
+				<span
+				  key={star}
+				  className={`${styles.star} ${
+					isFilled ? styles.filled : ''
+				  } ${
+					isHalf ? styles.half : ''
+				  }`}
+				>
+				  ★
+				</span>
+			  );
+			})}
+		  </div>
+		  <div className={styles.ratingText}>
+			{averageRating.toFixed(1)}/5 ({service.comments?.length || 0} reviews)
+		  </div>
+		</div>
+	  </div>
 
       <div className={styles.serviceContent}>
         {service.sections.map((section, index) => (
@@ -113,3 +141,5 @@ export const ServicePost = ({ service, isDetail = false }) => {
     </div>
   );
 };
+
+export default ServicePost;

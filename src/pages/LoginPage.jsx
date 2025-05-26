@@ -5,10 +5,13 @@ export function LoginPage({ setCurrentUser }) {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    role: 'user'
-  });
+	  email: '',
+	  password: '',
+	  role: 'user',
+	  managerName: '',
+	  companyName: ''
+});
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,7 +31,7 @@ export function LoginPage({ setCurrentUser }) {
         if (formData.role === 'manager') {
           alert('Manager account requires admin approval');
         }
-        setIsLogin(true); // Переключить на форму логина
+        setIsLogin(true); 
       }
     } catch (err) {
       setError(err.message);
@@ -65,7 +68,28 @@ export function LoginPage({ setCurrentUser }) {
             />
             <label>Password</label>
           </div>
-
+		{!isLogin && formData.role === 'manager' && (
+		<div>
+			<div className="input-group">
+				<input
+				  type="text"
+				  placeholder="Your Full Name"
+				  required
+				  value={formData.managerName}
+				  onChange={e => setFormData({...formData, managerName: e.target.value})}
+				/>
+			</div> 
+			<div className="input-group">
+				<input
+				  type="text"
+				  placeholder="Company Name"
+				  required
+				  value={formData.companyName}
+				  onChange={e => setFormData({...formData, companyName: e.target.value})}
+				/>
+			</div>
+		</div>
+			)}
           {!isLogin && (
             <div className="role-selector">
               <button
@@ -147,8 +171,8 @@ export function LoginPage({ setCurrentUser }) {
 
         .input-group input {
           width: 90%;
-          height: 20px;
-          padding: 16px;
+          height: 12px;
+          padding: 15px;
           border: 2px solid #e2e8f0;
           border-radius: 8px;
           font-size: 16px;
@@ -243,6 +267,7 @@ export function LoginPage({ setCurrentUser }) {
           margin-bottom: 24px;
           font-size: 14px;
         }
+		}
       `}</style>
     </div>
   );

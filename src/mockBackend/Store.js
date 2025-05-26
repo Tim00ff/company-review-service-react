@@ -1,4 +1,3 @@
-// src/mockBackend/Store.js
 import initialData from './initialData';
 import { generateId, simulateDelay } from './utils';
 
@@ -53,27 +52,37 @@ class Store {
   }
 
   // ======================== User Methods ========================
-  async registerUser({ email, password, role = 'user' }) {
-    await simulateDelay();
-    
-    if (this.data.users.some(u => u.email === email)) {
-      throw new Error('Email already registered');
-    }
-
-    const newUser = {
-      id: generateId('user'),
-      email,
-      password,
-      role,
-      isApproved: role === 'manager' ? false : true,
-      companyId: null,
-      createdAt: new Date().toISOString()
-    };
-
-    this.data.users.push(newUser);
-    this.saveToStorage();
-    return newUser;
+  async registerUser(userData) {
+  await simulateDelay();
+  
+  if (this.data.users.some(u => u.email === userData.email)) {
+    throw new Error('User already exists');
   }
+
+  const newUser = {
+    id: generateId('user'),
+    email: userData.email,
+    password: userData.password,
+    role: userData.role,
+    isApproved: userData.role !== 'manager',
+    createdAt: new Date().toISOString()
+  };
+
+  if (userData.role === 'manager') {
+    this.data.managerApplications.push({
+      ...newUser,
+      managerName: userData.managerName,
+      companyName: userData.companyName,
+      status: 'pending',
+      appliedAt: new Date().toISOString()
+    });
+  } else {
+    this.data.users.push(newUser);
+  }
+
+  this.saveToStorage();
+  return newUser;
+}
 
   async login(email, password) {
     await simulateDelay();
@@ -279,27 +288,12 @@ async searchServices(keywords = '') {
     this.saveToStorage();
   }
 
-  async addComment(serviceId, userId, text) {
-    const service = this.data.services.find(s => s.id === serviceId);
-    if (!service) throw new Error('Service not found');
-
-    service.comments = service.comments || [];
-    const comment = {
-      id: generateId('comment'),
-      userId,
-      text,
-      createdAt: new Date().toISOString()
-    };
-
-    service.comments.unshift(comment);
-    this.saveToStorage();
-    return comment;
-  }
 
   async getService(id) {
-    await simulateDelay();
-    return this.data.services.find(s => s.id === id);
-  }
+  await simulateDelay();
+  const service = this.data.services.find(s => s.id === id);
+  return service ? { ...service } : null;
+}
 
   // ======================== Review Methods ========================
   async createReview({ userId, companyId, rating, text }) {
@@ -316,6 +310,7 @@ async searchServices(keywords = '') {
       userId,
       companyId,
       rating,
+	  averageRating: 0,
       text,
       likes: 0,
       dislikes: 0,
@@ -328,104 +323,180 @@ async searchServices(keywords = '') {
     this.saveToStorage();
     return newReview;
   }
+// ======================== Comment Methods ========================
+async addComment(serviceId, userId, text, authorRating) {
+  const service = this.data.services.find(s => s.id === serviceId);
+  if (!service) throw new Error('Service not found');
 
-  async addReplyToReview(reviewId, { userId, text }) {
-    await simulateDelay();
-    
-    const review = this.data.reviews.find(r => r.id === reviewId);
-    if (!review) throw new Error('Review not found');
+  const comment = {
+    id: generateId('comment'),
+    serviceId,
+    userId,
+    text,
+    authorRating: Number(authorRating),
+    likes: [],
+    dislikes: [],
+    replies: [],
+    createdAt: new Date().toISOString()
+  };
 
-    const user = this.data.users.find(u => u.id === userId);
-    if (user?.companyId !== review.companyId) {
-      throw new Error('Only company manager can reply');
-    }
+  service.comments = [comment, ...(service.comments || [])];
+  this.setServiceAverageRating(serviceId);
+  this.saveToStorage();
+  return comment;
+}
 
-    const reply = {
-      id: generateId('reply'),
-      userId,
-      text,
-      createdAt: new Date().toISOString()
-    };
+async rateComment(commentId, userId, stars) {
+  const comment = this.getComment(commentId);
+  if (!comment) throw new Error('Comment not found');
+  if (stars < 1 || stars > 5) throw new Error('Invalid rating');
 
-    review.replies.push(reply);
-    this.saveToStorage();
-    return reply;
+  comment.userRatings[userId] = stars;
+  this.updateCommentAverageRating(commentId);
+  this.setServiceAverageRating(comment.serviceId);
+  this.saveToStorage();
+  return comment;
+}
+
+async toggleCommentLike(commentId, userId) {
+  const comment = this.getComment(commentId);
+  if (!comment) throw new Error('Comment not found');
+
+  if (comment.dislikes.includes(userId)) {
+    comment.dislikes = comment.dislikes.filter(id => id !== userId);
   }
 
-  async rateReview(reviewId, userId, isLike) {
-    await simulateDelay();
-    
-    const review = this.data.reviews.find(r => r.id === reviewId);
-    if (!review) throw new Error('Review not found');
+  const index = comment.likes.indexOf(userId);
+  if (index === -1) {
+    comment.likes.push(userId);
+  } else {
+    comment.likes.splice(index, 1);
+  }
+  
+  this.saveToStorage();
+  return comment;
+}
 
-    const existingRating = this.data.ratings.find(r => 
-      r.reviewId === reviewId && r.userId === userId
-    );
+async toggleCommentDislike(commentId, userId) {
+  const comment = this.data.services
+    .flatMap(s => s.comments || [])
+    .find(c => c.id === commentId);
 
-    if (existingRating) {
-      throw new Error('You already rated this review');
-    }
+  if (!comment) throw new Error('Comment not found');
 
-    this.data.ratings.push({
-      id: generateId('rating'),
-      reviewId,
-      userId,
-      isLike
-    });
+  comment.likes = comment.likes || [];
+  comment.dislikes = comment.dislikes || [];
 
-    isLike ? review.likes++ : review.dislikes++;
-    this.saveToStorage();
-    return review;
+  const likeIndex = comment.likes.indexOf(userId);
+  if (likeIndex !== -1) {
+    comment.likes.splice(likeIndex, 1);
   }
 
-
- async toggleCommentLike(commentId, userId) {
-    const comment = this.data.services
-      .flatMap(s => s.comments || [])
-      .find(c => c.id === commentId);
-
-    if (!comment) throw new Error('Comment not found');
-
-    if (comment.dislikes?.includes(userId)) {
-      comment.dislikes = comment.dislikes.filter(id => id !== userId);
-    }
-
-    comment.likes = comment.likes || [];
-    const index = comment.likes.indexOf(userId);
-    
-    if (index === -1) {
-      comment.likes.push(userId);
-    } else {
-      comment.likes.splice(index, 1);
-    }
-    
-    this.saveToStorage();
-    return comment;
+  const dislikeIndex = comment.dislikes.indexOf(userId);
+  if (dislikeIndex === -1) {
+    comment.dislikes.push(userId);
+  } else {
+    comment.dislikes.splice(dislikeIndex, 1);
   }
 
-  async toggleCommentDislike(commentId, userId) {
-    const comment = this.data.services
-      .flatMap(s => s.comments || [])
-      .find(c => c.id === commentId);
+  this.saveToStorage();
+  return comment;
+}
+// ======================== Replies ========================
 
-    if (!comment) throw new Error('Comment not found');
-    
-    if (comment.likes?.includes(userId)) {
-      comment.likes = comment.likes.filter(id => id !== userId);
-    }
-    
-    comment.dislikes = comment.dislikes || [];
-    const index = comment.dislikes.indexOf(userId);
-    
-    if (index === -1) {
-      comment.dislikes.push(userId);
-    } else {
-      comment.dislikes.splice(index, 1);
-    }
-    
-    this.saveToStorage();
-    return comment;
+async addReply(commentId, userId, text) {
+  let targetComment;
+  for (const service of this.data.services) {
+    targetComment = service.comments?.find(c => c.id === commentId);
+    if (targetComment) break;
   }
+
+  if (!targetComment) throw new Error('Comment not found');
+
+  const reply = {
+    id: generateId('reply'),
+    commentId,
+    userId,
+    text,
+    createdAt: new Date().toISOString()
+  };
+  targetComment.replies = [...(targetComment.replies || []), reply];
+  this.saveToStorage();
+  return reply;
+}
+
+async toggleReplyLike(replyId, userId) {
+  const reply = this.getReply(replyId);
+  if (!reply) throw new Error('Reply not found');
+
+  reply.likes = reply.likes || [];
+  const index = reply.likes.indexOf(userId);
+  
+  if (index === -1) {
+    reply.likes.push(userId);
+  } else {
+    reply.likes.splice(index, 1);
+  }
+  
+  this.saveToStorage();
+  return reply;
+}
+
+async toggleReplyDislike(replyId, userId) {
+  const reply = this.getReply(replyId);
+  if (!reply) throw new Error('Reply not found');
+
+  reply.dislikes = reply.dislikes || [];
+  const index = reply.dislikes.indexOf(userId);
+  
+  if (index === -1) {
+    reply.dislikes.push(userId);
+  } else {
+    reply.dislikes.splice(index, 1);
+  }
+  
+  this.saveToStorage();
+  return reply;
+}
+
+getReply(replyId) {
+  for (const service of this.data.services) {
+    for (const comment of service.comments || []) {
+      const reply = comment.replies?.find(r => r.id === replyId);
+      if (reply) return reply;
+    }
+  }
+  return null;
+}
+// ======================== Helpers ========================
+getComment(commentId) {
+  for (const service of this.data.services) {
+    const comment = service.comments?.find(c => c.id === commentId);
+    if (comment) {
+      return {
+        ...comment,
+        replies: comment.replies || []
+      };
+    }
+  }
+  return null;
+}
+
+setServiceAverageRating(serviceId) {
+  const service = this.data.services.find(s => s.id === serviceId);
+  if (!service) return;
+
+  const ratings = service.comments
+    .filter(c => c.authorRating > 0)
+    .map(c => c.authorRating);
+
+  service.averageRating = ratings.length > 0 
+    ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+    : 0;
+
+  this.saveToStorage();
+}
+
 
   // ======================== Helper Methods ========================
   updateCompanyRating(companyId) {
@@ -434,11 +505,48 @@ async searchServices(keywords = '') {
     const company = this.data.companies.find(c => c.id === companyId);
     if (company) company.rating = totalRating / companyReviews.length || 0;
   }
+  
+  getServiceAverageRating(serviceId) {
+    const service = this.data.services.find(s => s.id === serviceId);
+    if (!service?.comments?.length) return 0;
+    
+    const total = service.comments.reduce(
+      (sum, comment) => sum + (comment.rating || 0), 
+      0
+    );
+    return total / service.comments.length;
+  }
 
   // ======================== Moderation Methods ========================
-  async getPendingApplications() {
+   async getManagerApplications() {
     await simulateDelay();
-    return this.data.applications.filter(a => a.status === 'pending');
+    return this.data.managerApplications.filter(app => app.status === 'pending');
+  }
+
+  async approveManager(applicationId) {
+    const application = this.data.managerApplications.find(app => app.id === applicationId);
+    if (!application) throw new Error('Application not found');
+
+    // Создаем компанию
+    const company = {
+      id: generateId('comp'),
+      name: application.companyName,
+      managerId: application.id,
+      approvedAt: new Date().toISOString()
+    };
+
+    // Обновляем пользователя
+    const manager = {
+      ...application,
+      isApproved: true,
+      companyId: company.id
+    };
+
+    this.data.users.push(manager);
+    this.data.companies.push(company);
+    this.data.managerApplications = this.data.managerApplications.filter(app => app.id !== applicationId);
+    
+    this.saveToStorage();
   }
 
   async flagReview(reviewId, reason) {

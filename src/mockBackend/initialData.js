@@ -45,6 +45,19 @@ export default {
       approvedAt: '2023-01-05T00:00:00Z'
     }
   ],
+  managerApplications: [
+    {
+      id: 'mapp_1',
+      email: 'pending@manager.com',
+      password: 'manager123',
+      role: 'manager',
+      managerName: 'John Doe',
+      companyName: 'Tech Corp',
+      status: 'pending',
+      appliedAt: '2023-01-01',
+      isApproved: false
+    }
+  ],
   services: [
     {
       id: 'service_1',
@@ -61,18 +74,13 @@ export default {
       stats: {
         views: 150,
         likes: 45,
-		comments: [
-      {
-        id: 'comment_1',
-        userId: 'user_1',
-        text: 'Great service! Highly recommend',
-        createdAt: '2023-01-12T00:00:00Z'
-      }
-    ],
         shares: 12,
-        ratings: { 1: 0, 2: 1, 3: 2, 4: 10, 5: 32 },
-        totalRating: 4.6
+        ratings: { 1: 0, 2: 1, 3: 2, 4: 10, 5: 32 }
       },
+      comments: [
+        
+      ],
+      averageRating: 0,
       createdAt: '2023-01-10T00:00:00Z'
     },
     {
@@ -89,9 +97,10 @@ export default {
         views: 80,
         likes: 25,
         shares: 5,
-        ratings: { 1: 1, 2: 0, 3: 3, 4: 15, 5: 10 },
-        totalRating: 4.1
+        ratings: { 1: 1, 2: 0, 3: 3, 4: 15, 5: 10 }
       },
+      comments: [],
+      averageRating: 4.1,
       createdAt: '2023-01-11T00:00:00Z'
     }
   ],

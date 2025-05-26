@@ -4,6 +4,7 @@ import { store } from './mockBackend/Store';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { ServiceDetail } from './components/ServiceDetail';
+import { AdminPanel } from './components/AdminPanel';
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -48,7 +49,7 @@ function App() {
         ) : (
           <Link to="/login">Login</Link>
         )}
-		{currentUser && (
+		{currentUser && currentUser?.role === 'admin' &&(
           <button 
             onClick={handleResetData}
             className="danger"
@@ -70,6 +71,11 @@ function App() {
 		<Route path="/services/:id" element={
           currentUser ? <ServiceDetail /> : <Navigate to="/login" />
         }/>
+		<Route path="/admin" element={
+		  currentUser?.role === 'admin' 
+			? <AdminPanel /> 
+			: <Navigate to="/" />
+		}/>
       </Routes>
     </BrowserRouter>
   );

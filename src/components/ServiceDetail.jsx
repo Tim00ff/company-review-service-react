@@ -1,151 +1,117 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { store } from '../mockBackend/Store';
-import { ServicePost } from '../components/ServicePost';
-import styles from '../components/ServicePost.module.css';
-
-const Comment = ({ comment, currentUser, onUpdate }) => {
-  const [localComment, setLocalComment] = useState(comment);
-
-  const handleLike = async () => {
-    if (!currentUser) {
-      alert('Please login to like comments');
-      return;
-    }
-    
-    try {
-      const updated = await store.toggleCommentLike(comment.id, currentUser.id);
-      setLocalComment(updated);
-      onUpdate?.();
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const handleDislike = async () => {
-    if (!currentUser) {
-      alert('Please login to dislike comments');
-      return;
-    }
-
-    try {
-      const updated = await store.toggleCommentDislike(comment.id, currentUser.id);
-      setLocalComment(updated);
-      onUpdate?.();
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const commentUser = store.data.users.find(u => u.id === comment.userId);
-
-  return (
-    <div className={styles.comment}>
-      <div className={styles.commentHeader}>
-        <span className={styles.commentAuthor}>
-          {commentUser?.email || 'Anonymous'}
-        </span>
-        <span className={styles.commentDate}>
-          {new Date(comment.createdAt).toLocaleDateString()}
-        </span>
-      </div>
-      
-      <p className={styles.commentText}>{localComment.text}</p>
-      
-      <div className={styles.commentActions}>
-        <button
-          onClick={handleLike}
-          className={`${styles.likeButton} ${
-            localComment.likes?.includes(currentUser?.id) ? styles.active : ''
-          }`}
-        >
-          ❤️ {localComment.likes?.length || 0}
-        </button>
-        
-        <button
-          onClick={handleDislike}
-          className={`${styles.dislikeButton} ${
-            localComment.dislikes?.includes(currentUser?.id) ? styles.active : ''
-          }`}
-        >
-          💔 {localComment.dislikes?.length || 0}
-        </button>
-      </div>
-    </div>
-  );
-};
+import ServicePost from './ServicePost';
+import Comment from '../components/Comment';
+import styles from './ServicePost.module.css';
 
 export const ServiceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [service, setService] = useState(null);
   const [commentText, setCommentText] = useState('');
+  const [commentRating, setCommentRating] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
-  const [updateFlag, setUpdateFlag] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       const user = await store.getCurrentUser();
       setCurrentUser(user);
-      
       const serviceData = await store.getService(id);
       setService(serviceData);
     };
     loadData();
-  }, [id, updateFlag]);
+  }, [id]);
 
   const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (!currentUser || !commentText.trim()) return;
+  e.preventDefault();
+  if (!currentUser || !commentText.trim() || commentRating === 0) {
+    alert('Please select rating and write comment');
+    return;
+  }
 
-    try {
-      await store.addComment(id, currentUser.id, commentText.trim());
-      setCommentText('');
-      setUpdateFlag(prev => !prev); 
-    } catch (error) {
-      alert(error.message);
-    }
-  };
-
-  const handleCommentUpdate = () => {
-    setUpdateFlag(prev => !prev);
-  };
+  try {
+    await store.addComment(service.id, currentUser.id, commentText, commentRating);
+    const updatedService = await store.getService(service.id);
+    setService(updatedService);
+    setCommentText('');
+    setCommentRating(0);
+  } catch (error) {
+    alert(error.message);
+  }
+  const updatedService = await store.getService(service.id);
+  setService(updatedService);
+};
 
   if (!service) return <div className={styles.loading}>Loading service details...</div>;
 
   return (
     <div className={styles.serviceDetail}>
-      <button onClick={() => navigate(-1)} className={styles.backButton}>
-        ← Back to List
-      </button>
-
-      <ServicePost service={service} isDetail onUpdate={() => setUpdateFlag(prev => !prev)} />
+      <ServicePost service={service} isDetail onUpdate={() => setService({...service})} />
 
       <div className={styles.commentsSection}>
-        <h2>Comments ({service.comments?.length || 0})</h2>
+        <h2>Customer Reviews</h2>
+        
+        <div className={styles.ratingDistribution}>
+		  {[5, 4, 3, 2, 1].map((rating) => {
+			const count = service.comments?.filter(c => c.authorRating === rating).length || 0;
+			const percentage = (count / service.comments?.length * 100) || 0;
+			
+			return (
+			  <div key={rating} className={styles.ratingBar}>
+				<div className={styles.ratingLabel}>{rating}★</div>
+				<div className={styles.barContainer}>
+				  <div 
+					className={styles.barFill} 
+					style={{ width: `${percentage}%` }}
+				  />
+				</div>
+				<div className={styles.ratingCount}>{count}</div>
+			  </div>
+			);
+		  })}
+		  </div>
 
+        {/* Форма добавления комментария */}
         {currentUser && (
           <form onSubmit={handleCommentSubmit} className={styles.commentForm}>
+            <div className={styles.ratingInput}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  type="button"
+                  key={star}
+                  className={`${styles.star} ${
+                    commentRating >= star ? styles.selected : ''
+                  }`}
+                  onClick={() => setCommentRating(star)}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
             <textarea
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Share your thoughts..."
-              rows="3"
-              maxLength="500"
+              placeholder="Share your experience..."
+              rows="4"
             />
             <button type="submit" className={styles.submitButton}>
-              Post Comment
+              Submit Review
             </button>
           </form>
         )}
 
+        {/* Список комментариев */}
         <div className={styles.commentsList}>
           {service.comments?.map((comment) => (
             <Comment
               key={comment.id}
               comment={comment}
               currentUser={currentUser}
-              onUpdate={handleCommentUpdate}
+              onUpdate={async () => {
+			  const updatedService = await store.getService(id);
+			  setService(updatedService);
+			}}
             />
           ))}
         </div>
@@ -153,3 +119,5 @@ export const ServiceDetail = () => {
     </div>
   );
 };
+
+export default ServiceDetail;
