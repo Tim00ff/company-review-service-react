@@ -234,7 +234,7 @@ margin-bottom: 24px;
 }
 
 .commentForm textarea {
-width: 100%;
+width: 90%;
 padding: 12px;
 border: 2px solid #e2e8f0;
 border-radius: 8px;
@@ -368,5 +368,28 @@ color: #616161;
   width: 35.5%;
   overflow: hidden;
   color: #ffd700;
+}
+
+.backButton {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.backButton:hover {
+  background: linear-gradient(135deg, #6366f1 0%, #929292 100%);;
+}
+
+.serviceDetail {
+  position: relative;
+  padding-top: 60px;
 }
 

@@ -23,14 +23,24 @@ export function LoginPage({ setCurrentUser }) {
         setCurrentUser(user);
       } else {
         // Регистрация
-        const user = await store.registerUser({
-          email: formData.email,
-          password: formData.password,
-          role: formData.role
-        });
+        let user;
         if (formData.role === 'manager') {
           alert('Manager account requires admin approval');
+		  user = await store.registerUser({
+			  email: formData.email,
+			  password: formData.password,
+			  role: formData.role,
+			  managerName: formData.managerName,
+			  companyName: formData.companyName
+			});
         }
+		else{
+			user = await store.registerUser({
+			  email: formData.email,
+			  password: formData.password,
+			  role: formData.role
+			});
+		}
         setIsLogin(true); 
       }
     } catch (err) {
@@ -134,7 +144,7 @@ export function LoginPage({ setCurrentUser }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+         
           padding: 20px;
         }
 

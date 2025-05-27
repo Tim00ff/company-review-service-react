@@ -548,6 +548,22 @@ setServiceAverageRating(serviceId) {
     
     this.saveToStorage();
   }
+  
+  async rejectManager(applicationId) {
+  await simulateDelay();
+  
+  const applicationIndex = this.data.managerApplications.findIndex(
+    app => app.id === applicationId
+  );
+  
+  if (applicationIndex === -1) {
+    throw new Error('Application not found');
+  }
+
+  // Simply remove the application
+  this.data.managerApplications.splice(applicationIndex, 1);
+  this.saveToStorage();
+}
 
   async flagReview(reviewId, reason) {
     await simulateDelay();

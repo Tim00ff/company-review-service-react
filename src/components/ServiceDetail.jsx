@@ -47,6 +47,12 @@ export const ServiceDetail = () => {
 
   return (
     <div className={styles.serviceDetail}>
+	<button 
+        onClick={() => navigate(-1)}
+        className={styles.backButton}
+      >
+        ← Go Back
+      </button>
       <ServicePost service={service} isDetail onUpdate={() => setService({...service})} />
 
       <div className={styles.commentsSection}>

@@ -41,15 +41,12 @@ function App() {
   return (
     <BrowserRouter>
       <nav>
-        {currentUser ? (
-          <>
-            <span>Welcome, {currentUser.email}</span>
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        ) : (
-          <Link to="/login">Login</Link>
-        )}
-		{currentUser && currentUser?.role === 'admin' &&(
+  {currentUser ? (
+    <>
+      <span className="user-email">{currentUser.email}</span>
+      <div className="nav-buttons">
+        <button onClick={handleLogout}>Logout</button>
+        {currentUser?.role === 'admin' && (
           <button 
             onClick={handleResetData}
             className="danger"
@@ -58,8 +55,97 @@ function App() {
             Reset Data (Debug)
           </button>
         )}
-      </nav>
+      </div>
+    </>
+  ) : (
+    <Link to="/login" className="login-link">Login</Link>
+  )}
+  
+  <style jsx>{`
+   #root{
+	   background-color: green ;
 
+   }
+   
+   nav {
+      background: #2c3e50;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    nav .user-email {
+      color: #ecf0f1;
+      font-size: 0.9rem;
+      margin-right: 1.5rem;
+      opacity: 0.9;
+    }
+    
+    nav .nav-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+    
+    nav button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+    
+    nav button:hover {
+      background: #2980b9;
+    }
+    
+    nav .danger {
+      background: #e74c3c;
+    }
+    
+    nav .danger:hover {
+      background: #c0392b;
+    }
+    
+    nav .login-link {
+      color: #ecf0f1;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+    
+    nav .login-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+      nav {
+        padding: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      
+      nav .user-email {
+        margin-right: 1rem;
+        font-size: 0.8rem;
+      }
+      
+      nav button {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+      }
+    }
+   
+   
+   
+  `}</style>
+</nav>
+	  <style jsx>{`#root {background: linear-gradient(135deg, #AEF78E 0%, #66A182 100%);}`}</style>
       <Routes>
         <Route path="/login" element={
           currentUser ? <Navigate to="/" /> : 
@@ -78,7 +164,10 @@ function App() {
 		}/>
       </Routes>
     </BrowserRouter>
+	
   );
+  
+  
 }
 
 export default App;

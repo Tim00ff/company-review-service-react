@@ -1,0 +1,111 @@
+
+
+.admin-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #AEF78E;
+}
+
+.admin-panel h2 {
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.applications-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.application-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.application-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.application-card h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.application-card p {
+  color: #666;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.application-card button {
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.application-card button:hover {
+  background-color: #219a52;
+}
+
+@media (max-width: 768px) {
+  .admin-panel {
+    padding: 1rem;
+  }
+  
+  .applications-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.approve-btn {
+  background-color: #27ae60 !important;
+}
+
+.approve-btn:hover {
+  background-color: #219a52 !important;
+}
+
+.reject-btn {
+  background-color: #e74c3c !important;
+}
+
+.reject-btn:hover {
+  background-color: #c0392b !important;
+}
+
+/* Update existing button style */
+.application-card button {
+  flex: 1;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
