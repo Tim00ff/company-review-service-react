@@ -1,4 +1,3 @@
-// src/mockBackend/initialData.js
 export default {
   users: [
     {
@@ -42,7 +41,8 @@ export default {
       category: 'IT Services',
       description: 'Leading tech service provider',
       rating: 4.8,
-      approvedAt: '2023-01-05T00:00:00Z'
+      approvedAt: '2023-01-05T00:00:00Z',
+      managerId: 'user_manager_approved' // Link manager to company
     }
   ],
   managerApplications: [
@@ -62,6 +62,7 @@ export default {
     {
       id: 'service_1',
       companyId: 'comp_1',
+      userId: 'user_manager_approved', // Add userId to track creator
       sections: [
         { title: 'Web Development', content: 'Full-stack development services' },
         { title: 'Technologies', content: 'React, Node.js, PostgreSQL' }
@@ -75,17 +76,29 @@ export default {
         views: 150,
         likes: 45,
         shares: 12,
-        ratings: { 1: 0, 2: 1, 3: 2, 4: 10, 5: 32 }
+        ratings: { 1: 0, 2: 1, 3: 2, 4: 10, 5: 32 },
+        totalRating: 4.7
       },
       comments: [
-        
+        {
+          id: 'comment_1',
+          serviceId: 'service_1',
+          userId: 'user_1',
+          text: 'Great service! The team was very professional.',
+          authorRating: 5,
+          likes: ['user_1'],
+          dislikes: [],
+          replies: [],
+          createdAt: '2023-01-15T00:00:00Z'
+        }
       ],
-      averageRating: 0,
+      averageRating: 4.7,
       createdAt: '2023-01-10T00:00:00Z'
     },
     {
       id: 'service_2',
       companyId: 'comp_1',
+      userId: 'user_manager_approved', // Add userId to track creator
       sections: [
         { title: 'Mobile Apps', content: 'Cross-platform mobile development' }
       ],
@@ -97,9 +110,32 @@ export default {
         views: 80,
         likes: 25,
         shares: 5,
-        ratings: { 1: 1, 2: 0, 3: 3, 4: 15, 5: 10 }
+        ratings: { 1: 1, 2: 0, 3: 3, 4: 15, 5: 10 },
+        totalRating: 4.1
       },
-      comments: [],
+      comments: [
+        {
+          id: 'comment_2',
+          serviceId: 'service_2',
+          userId: 'user_1',
+          text: 'Good experience overall, but had some communication issues.',
+          authorRating: 4,
+          likes: [],
+          dislikes: [],
+          replies: [
+            {
+              id: 'reply_1',
+              commentId: 'comment_2',
+              userId: 'user_manager_approved',
+              text: 'Thank you for your feedback! We\'re working to improve our communication process.',
+              createdAt: '2023-01-16T00:00:00Z',
+              likes: [],
+              dislikes: []
+            }
+          ],
+          createdAt: '2023-01-12T00:00:00Z'
+        }
+      ],
       averageRating: 4.1,
       createdAt: '2023-01-11T00:00:00Z'
     }
@@ -107,5 +143,11 @@ export default {
   applications: [],
   reviews: [],
   ratings: [],
-  sessions: []
+  sessions: [
+    {
+      token: 'session_admin',
+      userId: 'user_admin',
+      createdAt: '2023-01-01T01:00:00Z'
+    }
+  ]
 };

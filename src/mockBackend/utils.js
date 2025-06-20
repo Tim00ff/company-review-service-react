@@ -6,8 +6,3 @@ export const generateId = (prefix) => {
   return `${prefix}_${random}`;
 };
 
-export const validateSchema = (data, schema) => {
-  const errors = [];
-  // Реализация валидации с помощью схемы (zod/yup)
-  return errors;
-};

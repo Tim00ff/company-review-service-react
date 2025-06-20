@@ -114,6 +114,7 @@ export const ServiceDetail = () => {
               key={comment.id}
               comment={comment}
               currentUser={currentUser}
+			  serviceOwnerId={service.userId}
               onUpdate={async () => {
 			  const updatedService = await store.getService(id);
 			  setService(updatedService);

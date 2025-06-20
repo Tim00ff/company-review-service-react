@@ -173,29 +173,72 @@ class Store {
     return company;
   }
   // ======================== Service Methods =======================
-    async createServicePost(serviceData) {
-    await simulateDelay();
-    
-    const newService = {
-      id: generateId('service'),
-      sections: serviceData.sections,
-      images: serviceData.images,
-      tags: serviceData.tags.toLowerCase().split(' ').filter(t => t),
-      stats: {
-        views: 0,
-        likes: 0,
-        shares: 0,
-        ratings: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-        totalRating: 0
-      },
-      createdAt: new Date().toISOString(),
-      companyId: serviceData.companyId
-    };
+  
+  async getServicesByCompany(companyId) {
+  await simulateDelay();
+  return this.data.services.filter(service => service.companyId === companyId);
+}
+async getService(id) {
+  await simulateDelay();
+  const service = this.data.services.find(s => s.id === id);
+  return service ? { ...service } : null;
+}
+async createServicePost(serviceData) {
+  await simulateDelay();
+  
+  const tagsArray = typeof serviceData.tags === 'string' 
+    ? serviceData.tags.toLowerCase().split(' ').filter(t => t)
+    : serviceData.tags;
 
-    this.data.services.push(newService);
-    this.saveToStorage();
-    return newService;
+  const newService = {
+    id: generateId('service'),
+    sections: serviceData.sections,
+    images: serviceData.images,
+    tags: tagsArray,  // Use the array version
+    stats: {
+      views: 0,
+      likes: 0,
+      shares: 0,
+      ratings: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      totalRating: 0
+    },
+    createdAt: new Date().toISOString(),
+    companyId: serviceData.companyId,
+    userId: serviceData.userId
+  };
+
+  this.data.services.push(newService);
+  this.saveToStorage();
+  return newService;
+}
+
+async updateService(serviceId, updates) {
+  await simulateDelay();
+  
+  const serviceIndex = this.data.services.findIndex(s => s.id === serviceId);
+  if (serviceIndex === -1) throw new Error('Service not found');
+  
+  // Convert tags to array if needed
+  if (typeof updates.tags === 'string') {
+    updates.tags = updates.tags.toLowerCase().split(' ').filter(t => t);
   }
+
+  const existing = this.data.services[serviceIndex];
+  
+  this.data.services[serviceIndex] = {
+    ...existing,
+    ...updates,
+    stats: existing.stats,
+    comments: existing.comments,
+    id: existing.id,
+    createdAt: existing.createdAt,
+    companyId: existing.companyId,
+    userId: existing.userId
+  };
+  
+  this.saveToStorage();
+  return this.data.services[serviceIndex];
+}
 
 async searchServices(keywords = '') {
   await simulateDelay();
@@ -230,6 +273,18 @@ async searchServices(keywords = '') {
     .sort((a, b) => 
       this.calculateRelevanceScore(b) - this.calculateRelevanceScore(a)
     );
+}
+
+
+
+async deleteService(serviceId) {
+  await simulateDelay();
+  
+  const serviceIndex = this.data.services.findIndex(s => s.id === serviceId);
+  if (serviceIndex === -1) throw new Error('Service not found');
+  
+  this.data.services.splice(serviceIndex, 1);
+  this.saveToStorage();
 }
 
   calculateRelevanceScore(service) {
@@ -405,13 +460,14 @@ async toggleCommentDislike(commentId, userId) {
 // ======================== Replies ========================
 
 async addReply(commentId, userId, text) {
-  let targetComment;
-  for (const service of this.data.services) {
-    targetComment = service.comments?.find(c => c.id === commentId);
-    if (targetComment) break;
-  }
-
-  if (!targetComment) throw new Error('Comment not found');
+  const service = this.data.services.find(s => 
+    s.comments?.some(c => c.id === commentId)
+  );
+  
+  if (!service) throw new Error('Comment not found');
+  
+  const comment = service.comments.find(c => c.id === commentId);
+  if (!comment) throw new Error('Comment not found');
 
   const reply = {
     id: generateId('reply'),
@@ -420,7 +476,8 @@ async addReply(commentId, userId, text) {
     text,
     createdAt: new Date().toISOString()
   };
-  targetComment.replies = [...(targetComment.replies || []), reply];
+  
+  comment.replies = [...(comment.replies || []), reply];
   this.saveToStorage();
   return reply;
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { store } from '../mockBackend/Store';
 import styles from './Comment.module.css';
 
-const Comment = ({ comment, currentUser, onUpdate }) => {
+const Comment = ({ comment, currentUser, onUpdate, serviceOwnerId }) => {
   const [replyText, setReplyText] = useState('');
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showAllReplies, setShowAllReplies] = useState(false);
@@ -36,6 +36,7 @@ const Comment = ({ comment, currentUser, onUpdate }) => {
   const commentUser = store.data.users.find(u => u.id === comment.userId);
   const isManager = currentUser?.role === 'manager';
   const authorRating = comment.authorRating || 0;
+  const canReply = isManager && currentUser.id === serviceOwnerId;
 
 const handleReplyLike = async (replyId) => {
     if (!currentUser) {
@@ -134,7 +135,7 @@ const handleReplyLike = async (replyId) => {
           </button>
         </div>
         
-        {isManager && (
+        {canReply && (
           <div className={styles.replyActions}>
             <button 
               onClick={() => setShowReplyForm(!showReplyForm)}
